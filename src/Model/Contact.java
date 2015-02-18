@@ -55,9 +55,28 @@ public class Contact extends Application {
 	}
 
 	public boolean save() {
-		String values = String.format("(?, '%s', '%s', '%s')", this.name,
-				this.surname, this.number);
-		return Application.save(tableName, values);
+		String values = null;
+		if(this.id != -1) {
+			values = String.format("(%d, '%s', '%s', '%s')", this.id, this.name,this.surname, this.number);
+		}
+		else 
+			values = String.format("(?, '%s', '%s', '%s')", this.name,this.surname, this.number);
+		int id = Application.save(tableName, values);
+		if(id == -1)
+			return false;
+		else {
+			this.id = id;
+			return true;
+		}
+	}
+	
+	public static void delete(int id) {
+		Application.delete(tableName, id);
+	}
+	
+	public void update() {
+		String sql = String.format("name = '%s', surname = '%s', number = '%s'", this.name, this.surname, this.number);
+		Application.update(tableName, this.id, sql);
 	}
 
 	public static Contact[] all() {
@@ -80,6 +99,11 @@ public class Contact extends Application {
 			return new Contact[0];
 		}
 	}
+	
+	/*
+	 * public static boolean equals(Contact other) {
+	 * 
+	 */
 
 	public String getDisplyName() {
 		return this.name + " " + this.surname;

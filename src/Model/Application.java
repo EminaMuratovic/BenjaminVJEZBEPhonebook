@@ -5,8 +5,8 @@ import java.sql.*;
 public class Application {
 	protected static Connection db;
 
-	public static void init() throws SQLException {
-		db = DriverManager.getConnection("jdbc:sqlite:phonebook.db");
+	public static void init(String databaseName) throws SQLException {
+		db = DriverManager.getConnection("jdbc:sqlite:" + databaseName + ".db");
 	}
 
 	protected static ResultSet find(int id, String tableName) {
@@ -33,30 +33,54 @@ public class Application {
 			return null;
 		}
 	}
+	
+	protected static void delete(String tableName, int id) {
+		try {
+			Statement stmt = db.createStatement();
+			String sql = String.format("DELETE FROM %s WHERE id = '%d';", tableName, id);
+			stmt.execute(sql);
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+	}
 
-	protected static boolean save(String tableName, String values) {
+	protected static void update(String tableName, int id, String values) {
+		try {
+			Statement stmt = db.createStatement();
+			String sql = String.format("UPDATE %s SET %s WHERE id = '%d'",
+					tableName, values, id);
+			stmt.execute(sql);
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+	}
+
+	protected static int save(String tableName, String values) {
 		Statement stmt = null;
 		try {
 			stmt = db.createStatement();
 			String sql = String.format("INSERT INTO %s VALUES %s ;", tableName,
 					values);
 			stmt.execute("begin;");
-			stmt.execute
-
-			(sql);
+			stmt.execute(sql);
 			stmt.execute("commit;");
-			return true;
+			sql = String
+					.format("SELECT max(id) as last_id FROM %s;", tableName);
+			ResultSet rs = stmt.executeQuery(sql);
+			rs.next();
+			return rs.getInt(1);
 		} catch (SQLException e) {
 			if (stmt != null)
 				try {
-					stmt.executeQuery("rollback;");
+					stmt.execute("rollback;");
 				} catch (SQLException e1) {
 					System.err.println(e1.getMessage());
-					return false;
+					return -1;
 				}
 			System.err.println(e.getMessage());
-			return false;
+			return -1;
 		}
 
 	}
+
 }

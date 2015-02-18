@@ -16,7 +16,7 @@ public class ApplicationController {
 
 	public static void main(String[] args) {
 		try {
-			Application.init();
+			Application.init("phonebook");
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
@@ -24,18 +24,36 @@ public class ApplicationController {
 		Main.init();
 		home();
 	}
+	
+	public static void edit(int id) {
+		Contact c = Contact.find(id);
+		ApplicationView.edit(c);
+	}
+	
+	public static void update(int id) {
+		Contact c = Contact.find(id);
+		ApplicationView.updateContact(c);
+	}
+	
+	public static void update(Contact c) {
+		c.update();
+		ApplicationView.edit(c);
+	}
 
 	public static void addContact() {
 		ApplicationView.addContact();
+	}
+	
+	public static void delete(int id) {
+		Contact.delete(id);
+		list();
 	}
 
 	public static void create(String name, String surname, String number) {
 		Contact newContact = new Contact(name, surname, number);
 		if (newContact.save()) {
 			// TODO redirect to contact info
-			JOptionPane.showMessageDialog(null,
-					"You have saved " + newContact.getName(), "Contact added",
-					JOptionPane.INFORMATION_MESSAGE);
+			edit(newContact.getId());
 			home();
 		} else {
 			JOptionPane.showMessageDialog(null, "There has been a mistake!",
